@@ -1,0 +1,104 @@
+
+
+
+     CREATE DATABASE StockDB;
+
+     Use StockDB;
+
+     CREATE TABLE Stock (
+
+     ID INT Identity(1,1) PRIMARY KEY,
+
+     Product NVARCHAR(100),
+
+     AvailableStock DECIMAL(10,2) NOT NULL,
+
+     Sold DECIMAL(10,2) NOT NULL,
+
+     NetStock DECIMAL(10,2) NOT NULL
+
+
+
+     );
+
+
+
+
+    private string connectionString = "Server=YOUR_SERVER_NAME;Database=StockDB;TrustServerCertificate=True;Integrated Security=True;";
+
+
+
+
+    private void StockData()
+        {
+            using (SqlConnection con = new SqlConnection(connectionString))
+            {
+                con.Open();
+                SqlDataAdapter da = new SqlDataAdapter("SELECT * FROM Stock", con);
+                DataTable dt = new DataTable();
+                da.Fill(dt);
+                dataGridView1.DataSource = dt;
+            }
+        }
+
+
+
+        // Add Code
+        private void btnAdd_Click(object sender, EventArgs e)
+        {
+            if (textBox1.Text == "" || textBox2.Text == "")
+            {
+                MessageBox.Show("Please enter product and availablestock!", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            using (SqlConnection con = new SqlConnection(connectionString))
+            {
+                con.Open();
+                string query = "INSERT INTO Stock (Product, AvailableStock, Sold, NetStock) VALUES (@product, @availablestock, @sold, @netstock)";
+                using (SqlCommand cmd = new SqlCommand(query, con))
+                {
+                    cmd.Parameters.AddWithValue("@product", textBox1.Text);
+                    cmd.Parameters.AddWithValue("@availablestock", Convert.ToDecimal(textBox2.Text));
+                    cmd.Parameters.AddWithValue("@sold", Convert.ToDecimal(textBox3.Text));
+                    cmd.Parameters.AddWithValue("@netstock", Convert.ToDecimal(textBox4.Text));
+
+                    cmd.ExecuteNonQuery();
+                }
+            }
+
+            MessageBox.Show("Stock added successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            LoadExpenses(); // Refresh DataGridView
+        }
+
+        // Delete Code
+        private void btnDelete_Click(object sender, EventArgs e)
+        {
+            if (dataGridView1.SelectedRows.Count > 0)
+            {
+                int id = Convert.ToInt32(dataGridView1.SelectedRows[0].Cells["ID"].Value);
+
+                using (SqlConnection con = new SqlConnection(connectionString))
+                {
+                    con.Open();
+                    string query = "DELETE FROM Stock WHERE ID = @id";
+                    using (SqlCommand cmd = new SqlCommand(query, con))
+                    {
+                        cmd.Parameters.AddWithValue("@id", id);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+
+                MessageBox.Show("Stock deleted successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                LoadExpenses(); // Refresh DataGridView
+            }
+            else
+            {
+                MessageBox.Show("Please select a row to delete!", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+    }
+}
+
+
+   
